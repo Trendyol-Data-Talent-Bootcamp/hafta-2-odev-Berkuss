@@ -23,6 +23,39 @@ END WHILE
 
 ## İkinci çözüm :)
 
+### Kaynak Kod
+```JAVA
+public static void createQuery() throws Exception{
+        DateFormat simpleDateFormat=  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = simpleDateFormat.parse("2020-03-03 00:00:00");
+
+        String query = "select timestamp '2020-03-03 00:00:00' view_ts\n" +
+                "      ,approx_count_distinct(deviceid) active_user_cnt\n" +
+                " from sample.pageview\n" +
+                "where view_ts between '2020-03-03 23:54:00' and '2020-03-03 23:59:00' \n";
+        StringBuilder stringBuilder = new StringBuilder(query);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        Calendar c2 = Calendar.getInstance() ;
+        for (int i = 1; i < 1440 ; i++) {
+            stringBuilder.append("union all \n");
+            calendar.setTime(date);
+            c2.setTime(date);
+            calendar.add(Calendar.MINUTE,i);
+            c2.add(Calendar.MINUTE,i-5);
+            String tempQuery = "select timestamp " + simpleDateFormat.format(calendar.getTime()) +
+            ",approx_count_distinct(deviceid) active_user_cnt\n" +
+                    "from sample.pageview\n" +
+                    "where view_ts between ' " + simpleDateFormat.format(c2.getTime()) +"' and '"+ simpleDateFormat.format(calendar.getTime())+"' \n";
+            stringBuilder.append(tempQuery);
+        }
+        System.out.println(stringBuilder.toString());
+    }
+```
+
+### Çıktı : 
+
 ``` SQL
 
 
